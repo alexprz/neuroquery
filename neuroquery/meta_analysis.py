@@ -38,7 +38,7 @@ def _uniform_kernel(r, n1=1, n2=1, n3=1):
     return kernel
 
 
-def MKDA(peaks_imgs, r=15):
+def MKDA(peaks_imgs, r=15, affine=None):
     """Implement MKDA method.
 
     Args:
@@ -58,9 +58,14 @@ def MKDA(peaks_imgs, r=15):
     # Convert to iterator if not already the case
     peaks_imgs = iter(peaks_imgs)
 
-    peaks_img = next(peaks_imgs)
-    affine = peaks_img.affine
-    mkda_arr = peaks_img.get_fdata()
+    # peaks_img = next(peaks_imgs)
+    # affine = peaks_img.affine
+    # mkda_arr = peaks_img.get_fdata()
+    mkda_arr = next(peaks_imgs)
+    if isinstance(mkda_arr, nib.Nifti1Image):
+        if affine is None:
+            affine = mkda_arr.affine
+        mkda_arr = mkda_arr.get_fdata()
 
     n1 = affine[0, 0]
     n2 = affine[1, 1]
@@ -68,7 +73,11 @@ def MKDA(peaks_imgs, r=15):
     kernel = _uniform_kernel(r, n1, n2, n3)
 
     for peaks_img in peaks_imgs:
-        peaks_arr = peaks_img.get_fdata()
+        if isinstance(peaks_img, nib.Nifti1Image):
+            peaks_arr = peaks_img.get_fdata()
+        else:
+            peaks_arr = peaks_img
+
         arr = convolve(peaks_arr, kernel, mode='constant')
         arr = arr > 0
         mkda_arr += arr

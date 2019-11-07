@@ -111,3 +111,4 @@ venv.bak/
 
 # Cache
 cache
+cache_*
